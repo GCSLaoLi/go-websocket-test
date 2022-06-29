@@ -6,6 +6,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gcmd"
+	"github.com/gogf/gf/v2/os/glog"
 
 	"go-websocket-test/internal/controller"
 )
@@ -23,6 +24,24 @@ var (
 					controller.Hello,
 				)
 			})
+			s.BindHandler("/socket", func(r *ghttp.Request) {
+				var ctx = r.Context()
+				ws, err := r.WebSocket()
+				if err != nil {
+					glog.Error(ctx, err)
+					r.Exit()
+				}
+				for {
+					msgType, msg, err := ws.ReadMessage()
+					if err != nil {
+						return
+					}
+					if err = ws.WriteMessage(msgType, msg); err != nil {
+						return
+					}
+				}
+			})
+			s.SetServerRoot("./resource/public/html")
 			s.Run()
 			return nil
 		},
